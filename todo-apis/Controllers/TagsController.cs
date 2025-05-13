@@ -43,6 +43,30 @@ namespace todo_apis.Controllers
             return tag;
         }
 
+        // GET: api/Tags/5
+        [HttpGet("{username}")]
+        public async Task<ActionResult<Entities.Models.TagDto>> GetTagsFromClient(long username)
+        {
+            var client = await _context.clients.FindAsync(username);
+
+            if (client == null)
+            {
+                return BadRequest("User Not Found");
+            }
+
+            var tags = await _context.tags.ToListAsync();
+
+            for (var i = 0; i<tags.Count; i++)
+            {
+                if (tags[i].client_user != client.username)
+                {
+                    tags.RemoveAt(i);
+                }
+            }
+
+            return Ok(tags);
+        }
+
         // POST: api/Tags
         [HttpPost]
         public async Task<ActionResult<Entities.Models.TagDto>> PostTag([FromBody] Models.Tag newTag)

@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -35,6 +36,13 @@ namespace todo_apis.Controllers
                 return BadRequest("Invalid username/password");
             }
             return Ok(token);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult AuthenticatedOnly()
+        {
+            return Ok("You are Authenticated");
         }
     }
 }

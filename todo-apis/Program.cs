@@ -1,6 +1,8 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization; // Added this namespace
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using todo_apis.Context;
@@ -16,7 +18,6 @@ builder.Services.AddOpenApi();
 
 var origenesPermitidos = builder.Configuration.GetValue<string>("OrigenesPermitidos")!.Split(',');
 
-
 builder.Services.AddCors(opciones =>
 {
     opciones.AddDefaultPolicy(politica =>
@@ -28,6 +29,20 @@ builder.Services.AddCors(opciones =>
 });
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["AppSettings:Issuer"],
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["AppSettings:Audience"],
+        ValidateLifetime = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!)),
+        ValidateIssuerSigningKey = true
+    };
+});
 
 var app = builder.Build();
 
@@ -42,6 +57,7 @@ app.UseHttpsRedirection();
 
 app.UseCors();
 
+app.UseAuthentication(); // Added this line to enable authentication middleware
 app.UseAuthorization();
 
 app.MapControllers();
