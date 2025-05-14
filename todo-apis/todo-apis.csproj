@@ -18,6 +18,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
+    <PackageReference Include="NSwag.AspNetCore" Version="14.4.0" />
+    <PackageReference Include="NSwag.Core" Version="14.4.0" />
+    <PackageReference Include="NSwag.Generation" Version="14.4.0" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.2.7" />
     <PackageReference Include="System.Diagnostics.Tools" Version="4.3.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.9.0" />

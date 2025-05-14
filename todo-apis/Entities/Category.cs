@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace todo_apis.Entities.Models
+namespace todo_apis.Entities
 {
     public class Category
     {

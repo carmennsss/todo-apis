@@ -21,74 +21,90 @@ namespace todo_apis.Controllers
             _context = context;
         }
 
-        // GET: api/tasks
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<MoTask>>> GetTasks()
-        {
-            return await _context.tasks.ToListAsync();
-        }
-
-        // GET: api/tasks/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<MoTask>> GetTasks(long id)
-        {
-            var tasks = await _context.tasks.FindAsync(id);
-
-            if (tasks == null)
-            {
-                return NotFound();
-            }
-
-            return tasks;
-        }
-
-        // PUT: api/tasks/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTasks(long id, MoTask tasks)
-        {
-            if (id != tasks.task_id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(tasks).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!tasksExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
         // POST: api/tasks
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<MoTask>> Posttasks(MoTask tasks)
+        public async Task<ActionResult<CustomTask>> Posttasks(CustomTask tasks)
         {
             _context.tasks.Add(tasks);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetTasks), new { id = tasks.task_id }, tasks);
+            return Ok(tasks);
+            //return CreatedAtAction(nameof(GetTasks), new { id = tasks.task_id }, tasks);
             //return CreatedAtAction("Gettasks", new { id = tasks.Id }, tasks);
         }
 
- 
-
-        private bool tasksExists(long id)
+        [HttpGet("user/{username}")]
+        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksFromClient(string username)
         {
-            return _context.tasks.Any(e => e.task_id == id);
+
+            var client =  await _context.clients.FindAsync(username);
+            if (client == null)
+            {
+                return BadRequest("User Not Found");
+            }
+
+            var tasks = await _context.tasks.Where(task => task.client_user == client.username).ToListAsync();
+            if (tasks == null)
+            {
+                return BadRequest("Tasks Not Found");
+            }
+            return Ok(tasks);
         }
+
+        [HttpGet("{date}/{username}")]
+        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksFromClient(string username, string date)
+        {
+            if (date == null)
+            {
+                return BadRequest("Date Not Found");
+            }
+
+            var client = await _context.clients.FindAsync(username);
+            if (client == null)
+            {
+                return BadRequest("User Not Found");
+            }
+
+            var tasks = await _context.tasks.Where(task => task.client_user == client.username && task.task_due_date == date).ToListAsync();
+            if (tasks == null)
+            {
+                return BadRequest("Tasks Not Found");
+            }
+            return Ok(tasks);
+        }
+
+        [HttpPost("edit/{task_id}")]
+        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksFromClient(long task_id, CustomTask edited_Task)
+        {
+            foreach (var task in _context.tasks.Where(task => task_id == task.task_id))
+            {
+                if (task == null)
+                {
+                    return BadRequest("Task Not Found");
+                }
+
+                if (edited_Task.task_name != "")
+                {
+                    task.task_name = edited_Task.task_name;
+                }
+
+                if (edited_Task.task_desc != "")
+                {
+                    task.task_desc = edited_Task.task_desc;
+                }
+
+                if (edited_Task.list_id != -1)
+                {
+                    var list = _context.categories.Where(category => category.category_id == edited_Task.list_id).FirstOrDefault();
+                    if (list == null)
+                    {
+                        return BadRequest("Category Not Found");
+                    }
+                    task.list_id = edited_Task.list_id;
+                }
+            }
+            return Ok();
+        }
+
     }
 }

@@ -2,14 +2,14 @@
 
 namespace todo_apis.Models
 {
-    public class MoTask
+    public class TaskDto
     {
         [Key]
         public long task_id { get; set; }
 
         public string task_name { get; set; }
         public string task_desc { get; set; }
-        public string list_id { get; set; }
+        public int list_id { get; set; }
         public string task_due_date { get; set; }
         public string state_name { get; set; }
         public string client_user { get; set; }

@@ -7,9 +7,11 @@ namespace todo_apis.Context
     public class AppDbContext:DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-        public DbSet<Models.MoTask> tasks { get; set; }
+        public DbSet<Models.CustomTask> tasks { get; set; } = default!;
         public DbSet<Client> clients { get; set; } = default!;
-        public DbSet<TagDto> tags { get; set; } = default!;
+        public DbSet<Tag> tags { get; set; } = default!;
+
+        public DbSet<Category> categories { get; set; } = default!;
 
     }
 }
