@@ -2,7 +2,7 @@
 
 namespace todo_apis.Entities.Models
 {
-    public class Category
+    public class CategoryDto
     {
         [Key]
         public int category_id { get; set; }

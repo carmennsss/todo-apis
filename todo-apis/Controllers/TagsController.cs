@@ -25,7 +25,7 @@ namespace todo_apis.Controllers
 
         // GET: api/Tags/5
         [HttpGet("id/{id}")]
-        public async Task<ActionResult<Entities.Models.TagDto>> GetTag(long id)
+        public async Task<ActionResult<TagDto>> GetTag(long id)
         {
             var tag = new TagDto();
             var tag_found = await _context.tags.FindAsync(id);
@@ -38,6 +38,7 @@ namespace todo_apis.Controllers
             tag.tag_name = tag_found.tag_name;
             tag.tag_id = tag_found.tag_id;
             tag.client_user = tag_found.client_user;
+
 
             return tag;
         }
@@ -72,11 +73,6 @@ namespace todo_apis.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetTag", new { id = tag.tag_id }, tag);
-        }
-
-        private bool TagExists(long id)
-        {
-            return _context.tags.Any(e => e.tag_id == id);
         }
 
         [Authorize]

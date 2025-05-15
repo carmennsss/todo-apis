@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using todo_apis.Entities;
 using todo_apis.Entities.Models;
 using todo_apis.Models;
 
@@ -7,11 +8,42 @@ namespace todo_apis.Context
     public class AppDbContext:DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-        public DbSet<Models.CustomTask> tasks { get; set; } = default!;
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Task_SubtaskDto>().HasKey(x => new
+            {
+                x.subtask_id,
+                x.task_id,
+            });
+
+            modelBuilder.Entity<Task_SubTask>().HasKey(x => new
+            {
+                x.subtask_id,
+                x.task_id,
+            });
+
+            modelBuilder.Entity<Task_TagDto>().HasKey(x => new
+            {
+                x.tag_id,
+                x.task_id,
+            });
+
+            modelBuilder.Entity<Task_Tag>().HasKey(x => new
+            {
+                x.tag_id,
+                x.task_id,
+            });
+
+        }
+        public DbSet<CustomTask> tasks { get; set; } = default!;
         public DbSet<Client> clients { get; set; } = default!;
         public DbSet<Tag> tags { get; set; } = default!;
 
         public DbSet<Category> categories { get; set; } = default!;
+
+        public DbSet<Entities.SubTask> subTasks { get; set; } = default!;
+        public DbSet<todo_apis.Entities.Task_SubTask> tasks_subtask { get; set; } = default!;
 
     }
 }

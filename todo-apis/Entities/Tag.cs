@@ -1,7 +1,10 @@
-﻿namespace todo_apis.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace todo_apis.Models
 {
     public class Tag
     {
+        [Key]
         public int tag_id { get; set; }
         public string tag_name { get; set; }
 
