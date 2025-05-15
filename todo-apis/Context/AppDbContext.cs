@@ -44,6 +44,7 @@ namespace todo_apis.Context
 
         public DbSet<Entities.SubTask> subTasks { get; set; } = default!;
         public DbSet<todo_apis.Entities.Task_SubTask> tasks_subtask { get; set; } = default!;
+        public DbSet<todo_apis.Entities.Task_Tag> Task_Tag { get; set; } = default!;
 
     }
 }

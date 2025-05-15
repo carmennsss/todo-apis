@@ -5,7 +5,7 @@ namespace todo_apis.Entities.Models
     public class SubTask
     {
         [Key]
-        public long subtask_id { get; set; }
+        public int subtask_id { get; set; }
 
         public string subtask_name { get; set; }
     }

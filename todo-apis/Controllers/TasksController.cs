@@ -108,7 +108,7 @@ namespace todo_apis.Controllers
                 return BadRequest("User Not Found");
             }
 
-            var tasks = await _context.tasks.Where(task => task.client_user == client.username && task.task_due_date == date).ToListAsync();
+            var tasks = await _context.tasks.Where(task => task.client_user == client.username && task.task_due_date.ToShortDateString() == date).ToListAsync();
             if (tasks == null)
             {
                 return BadRequest("Tasks Not Found");

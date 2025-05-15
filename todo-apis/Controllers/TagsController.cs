@@ -25,7 +25,7 @@ namespace todo_apis.Controllers
 
         // GET: api/Tags/5
         [HttpGet("id/{id}")]
-        public async Task<ActionResult<TagDto>> GetTag(long id)
+        public async Task<ActionResult<TagDto>> GetTag(int id)
         {
             var tag = new TagDto();
             var tag_found = await _context.tags.FindAsync(id);
