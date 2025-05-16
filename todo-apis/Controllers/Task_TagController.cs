@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using todo_apis.Context;
 using todo_apis.Entities;
 using todo_apis.Models;
+using todo_apis.Utils.Comparers;
 
 namespace todo_apis.Controllers
 {
