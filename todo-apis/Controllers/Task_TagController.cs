@@ -12,7 +12,7 @@ using todo_apis.Models;
 
 namespace todo_apis.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/tasks-tag")]
     [ApiController]
     public class Task_TagController : ControllerBase
     {
@@ -25,7 +25,7 @@ namespace todo_apis.Controllers
 
         // HTTP GETS -------
 
-        [HttpGet("task/{id_task}")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<Tag>>> GetTasksTags(int id_task)
         {
             var tags = await _context.task_tag
@@ -46,7 +46,7 @@ namespace todo_apis.Controllers
             return Ok(tags);
         }
 
-        [HttpGet("tasks_not_in/{id_task}")]
+        [HttpGet("task/excluded-tags")]
         public async Task<ActionResult<IEnumerable<Tag>>> GetTagsNotInTask(int id_task)
         {
             var tags = await _context.task_tag
@@ -72,6 +72,27 @@ namespace todo_apis.Controllers
             }
 
             return Ok(tags_not_in);
+        }
+
+        [HttpGet("task/included-tags")]
+        public async Task<ActionResult<IEnumerable<Tag>>> GetTagsInTask(int id_task)
+        {
+            var tags = await _context.task_tag
+                .Where(ts => ts.task_id == id_task)
+                .Join(
+                    _context.tags,
+                    ts => ts.tag_id,
+                    tg => tg.tag_id,
+                    (ts, tg) => tg
+                )
+                .ToListAsync();
+
+            if (tags == null)
+            {
+                return BadRequest("Tags Not Found");
+            }
+
+            return Ok(tags);
         }
 
         // HTTP POSTS -------

@@ -12,7 +12,7 @@ using todo_apis.Models;
 
 namespace todo_apis.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/tags")]
     [ApiController]
     public class TagsController : ControllerBase
     {
@@ -25,7 +25,7 @@ namespace todo_apis.Controllers
 
         // HTTP GETS -------
 
-        [HttpGet("id/{id}")]
+        [HttpGet("{id}")]
         public async Task<ActionResult<TagDto>> GetTag(int id)
         {
             var tag = new TagDto();
@@ -44,7 +44,7 @@ namespace todo_apis.Controllers
             return tag;
         }
 
-        [HttpGet("user/{username}")]
+        [HttpGet("user")]
         public async Task<ActionResult<IEnumerable<TagDto>>> GetTagsFromClient(string username)
         {
             var client = await _context.clients.FindAsync(username);

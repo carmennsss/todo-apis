@@ -10,7 +10,7 @@ using todo_apis.Entities;
 
 namespace todo_apis.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/tasks-subtasks")]
     [ApiController]
     public class Tasks_SubTasksController : ControllerBase
     {
@@ -23,7 +23,7 @@ namespace todo_apis.Controllers
 
         // HTTP GETS -------
 
-        [HttpGet("subtask")]
+        [HttpGet("subtask/{id}")]
         public async Task<ActionResult<SubTask>> GetSubTask(int id_task, int id_subtask)
         {
             var subTask_link = await _context.task_subtask
@@ -44,7 +44,7 @@ namespace todo_apis.Controllers
             return subTask;
         }
 
-        [HttpGet("{id_task}")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<SubTask>>> GetSubTasks(int id_task)
         {
             var subTasks = await _context.task_subtask
@@ -67,7 +67,7 @@ namespace todo_apis.Controllers
 
         // HTTP POSTS -------
 
-        [HttpPost("add")]
+        [HttpPost("subtask")]
         public async Task<ActionResult<SubTask>> PostSubTasking(SubTask subTask)
         {
             _context.subtasks.Add(subTask);
@@ -92,7 +92,7 @@ namespace todo_apis.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<Task_SubTask>> PostSubTasking(Task_SubTask subTask)
+        public async Task<ActionResult<Task_SubTask>> PostSubTask_Task(Task_SubTask subTask)
         {
             _context.task_subtask.Add(subTask);
             try

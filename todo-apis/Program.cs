@@ -47,6 +47,7 @@ builder.Services.AddCors(opciones =>
 
 // Servicios
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ITasksService, TasksService>();
 
 // JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
@@ -68,8 +69,8 @@ var app = builder.Build();
 // Middleware
 if (app.Environment.IsDevelopment())
 {
-    app.UseOpenApi();       // Sirve swagger/v1/swagger.json
-    app.UseSwaggerUi();    // UI en /swagger
+    app.UseOpenApi();
+    app.UseSwaggerUi();
 }
 
 app.UseHttpsRedirection();

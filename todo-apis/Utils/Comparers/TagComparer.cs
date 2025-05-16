@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using todo_apis.Models;
 
-namespace todo_apis.Controllers
+namespace todo_apis.Utils.Comparers
 {
     public class TagComparer : IEqualityComparer<Tag>
     {

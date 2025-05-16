@@ -11,7 +11,7 @@ using todo_apis.Services.Interfaces;
 
 namespace todo_apis.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
     public class AuthController(IAuthService authService) : Controller
     {

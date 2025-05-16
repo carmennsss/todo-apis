@@ -12,7 +12,7 @@ using todo_apis.Entities.Models;
 
 namespace todo_apis.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/categories")]
     [ApiController]
     public class CategoriesController : ControllerBase
     {
@@ -25,7 +25,7 @@ namespace todo_apis.Controllers
 
         // HTTP GETS -------
 
-        [HttpGet("username")]
+        [HttpGet("user")]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategoriesClient(string username)
         {
             var client = await _context.clients.FindAsync(username);
