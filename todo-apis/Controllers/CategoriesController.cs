@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,8 +23,9 @@ namespace todo_apis.Controllers
             _context = context;
         }
 
-        // GET: api/Categories
-        [HttpGet]
+        // HTTP GETS -------
+
+        [HttpGet("username")]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategoriesClient(string username)
         {
             var client = await _context.clients.FindAsync(username);
@@ -31,7 +33,7 @@ namespace todo_apis.Controllers
                 return BadRequest("User Not Found");
             }
 
-            var categories = _context.categories.Where(category => category.client_user == client.username).ToListAsync();
+            var categories = await _context.categories.Where(category => category.client_user == client.username).ToListAsync();
             if (categories == null)
             {
                 return BadRequest("Categories Not Found");
@@ -40,7 +42,6 @@ namespace todo_apis.Controllers
             return Ok(categories);
         }
 
-        // GET: api/Categories/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Category>> GetCategory(int id)
         {
@@ -54,16 +55,34 @@ namespace todo_apis.Controllers
             return category;
         }
 
+        // HTTP POST -------
 
-        // POST: api/Categories
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Category>> PostCategory(Category category)
         {
             _context.categories.Add(category);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException) {
+                if (CategoryExists(category.category_id))
+                {
+                    return Conflict();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return  Ok(category);
+        }
 
-            return CreatedAtAction("GetCategory", new { id = category.category_id }, category);
+        // METHODS -------
+
+        public bool CategoryExists(int id)
+        {
+            return _context.categories.Any(c => c.category_id == id);
         }
     }
 }

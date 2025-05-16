@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,26 +14,18 @@ namespace todo_apis.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CoTasks : ControllerBase
+    public class Tasks : ControllerBase
     {
         private readonly AppDbContext _context;
 
-        public CoTasks(AppDbContext context)
+        public Tasks(AppDbContext context)
         {
             _context = context;
         }
 
-        // POST: api/tasks
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<CustomTask>> PostTasks(CustomTask tasks)
-        {
-            _context.tasks.Add(tasks);
-            await _context.SaveChangesAsync();
-            return Ok(tasks);
-            //return CreatedAtAction(nameof(GetTasks), new { id = tasks.task_id }, tasks);
-            //return CreatedAtAction("Gettasks", new { id = tasks.Id }, tasks);
-        }
+        
+
+        // HTTP GETS -------
 
         [HttpGet("status/{status}/{username}")]
         public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksStatus(string username, string state_name)
@@ -97,23 +91,42 @@ namespace todo_apis.Controllers
         [HttpGet("{date}/{username}")]
         public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksDate(string username, string date)
         {
-            if (date == null)
-            {
-                return BadRequest("Date Not Found");
-            }
-
+            var parsedDate = DateTime.Parse(HttpUtility.UrlDecode(date));
             var client = await _context.clients.FindAsync(username);
             if (client == null)
             {
                 return BadRequest("User Not Found");
             }
 
-            var tasks = await _context.tasks.Where(task => task.client_user == client.username && task.task_due_date.ToShortDateString() == date).ToListAsync();
+            var tasks = await _context.tasks.Where(task => task.client_user == client.username && task.task_due_date.Date == parsedDate.Date).ToListAsync();
             if (tasks == null)
             {
                 return BadRequest("Tasks Not Found");
             }
             return Ok(tasks);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<TaskDto>> GetTask(int task_id)
+        {
+            var task = await _context.tasks.FindAsync(task_id);
+            if (task == null)
+            {
+                return BadRequest("Task Not Found");
+            }
+            return Ok(task);
+        }
+
+        // HTTP POSTS -------
+
+        [HttpPost]
+        public async Task<ActionResult<CustomTask>> PostTasks(CustomTask tasks)
+        {
+            _context.tasks.Add(tasks);
+            await _context.SaveChangesAsync();
+            return Ok(tasks);
+            //return CreatedAtAction(nameof(GetTasks), new { id = tasks.task_id }, tasks);
+            //return CreatedAtAction("Gettasks", new { id = tasks.Id }, tasks);
         }
 
         [HttpPost("edit/{task_id}")]
@@ -145,19 +158,8 @@ namespace todo_apis.Controllers
             return Ok();
         }
 
-        // GET: api/Tasks/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<TaskDto>> GetTask(int task_id)
-        {
-            var task = await _context.tasks.FindAsync(task_id);
-            if (task == null)
-            {
-                return BadRequest("Task Not Found");
-            }
-            return Ok(task);
-        }
+        // HTTP DELETES -------
 
-        // DELETE: api/Tasks/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int id)
         {

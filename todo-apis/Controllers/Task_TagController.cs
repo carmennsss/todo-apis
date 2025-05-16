@@ -23,14 +23,16 @@ namespace todo_apis.Controllers
             _context = context;
         }
 
+        // HTTP GETS -------
+
         [HttpGet("task/{id_task}")]
         public async Task<ActionResult<IEnumerable<Tag>>> GetTasksTags(int id_task)
         {
-            var tags = await _context.Task_Tag
+            var tags = await _context.task_tag
                 .Where(ts => ts.task_id == id_task)
                 .Join(
                     _context.tags,
-                    ts => ts.task_id,
+                    ts => ts.tag_id,
                     tg => tg.tag_id,
                     (ts, tg) => tg
                 )
@@ -44,39 +46,40 @@ namespace todo_apis.Controllers
             return Ok(tags);
         }
 
-        [HttpGet("notask/{id_task}")]
+        [HttpGet("tasks_not_in/{id_task}")]
         public async Task<ActionResult<IEnumerable<Tag>>> GetTagsNotInTask(int id_task)
         {
-            var tags_task = await _context.tags
+            var tags = await _context.task_tag
+                .Where(ts => ts.task_id == id_task)
                 .Join(
-                    _context.Task_Tag,
+                    _context.tags,
+                    ts => ts.tag_id,
                     tg => tg.tag_id,
-                    ts => ts.task_id,
                     (ts, tg) => tg
                 )
                 .ToListAsync();
-
-            if (tags_task == null)
-            {
-                return BadRequest("SubTasks Not Found");
-            }
-
-            var tags = await _context.tags.Where(tag => !tags_task.Any(tag_task => tag_task.tag_id == tag.tag_id)).ToListAsync();
 
             if (tags == null)
             {
                 return BadRequest("Tags Not Found");
             }
+            var allTags = await _context.tags.ToListAsync();
+            var tags_not_in = allTags.Except(tags, new TagComparer()).ToList();
 
-            return Ok(tags);
+            if (tags_not_in == null)
+            {
+                return BadRequest("Tags Not Found");
+            }
+
+            return Ok(tags_not_in);
         }
 
-        // POST: api/Task_Tag
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // HTTP POSTS -------
+
         [HttpPost]
         public async Task<ActionResult<Task_Tag>> PostTask_Tag(Task_Tag task_Tag)
         {
-            _context.Task_Tag.Add(task_Tag);
+            _context.task_tag.Add(task_Tag);
             try
             {
                 await _context.SaveChangesAsync();
@@ -93,12 +96,14 @@ namespace todo_apis.Controllers
                 }
             }
 
-            return Ok();
+            return Ok(task_Tag);
         }
+
+        // METHODS -------
 
         private bool Task_TagExists(int id)
         {
-            return _context.Task_Tag.Any(e => e.tag_id == id);
+            return _context.task_tag.Any(e => e.tag_id == id);
         }
     }
 }

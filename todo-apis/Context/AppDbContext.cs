@@ -42,9 +42,9 @@ namespace todo_apis.Context
 
         public DbSet<Category> categories { get; set; } = default!;
 
-        public DbSet<Entities.SubTask> subTasks { get; set; } = default!;
-        public DbSet<todo_apis.Entities.Task_SubTask> tasks_subtask { get; set; } = default!;
-        public DbSet<todo_apis.Entities.Task_Tag> Task_Tag { get; set; } = default!;
+        public DbSet<Entities.SubTask> subtasks { get; set; } = default!;
+        public DbSet<todo_apis.Entities.Task_SubTask> task_subtask { get; set; } = default!;
+        public DbSet<todo_apis.Entities.Task_Tag> task_tag { get; set; } = default!;
 
     }
 }

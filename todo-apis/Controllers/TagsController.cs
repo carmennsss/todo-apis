@@ -23,7 +23,8 @@ namespace todo_apis.Controllers
             _context = context;
         }
 
-        // GET: api/Tags/5
+        // HTTP GETS -------
+
         [HttpGet("id/{id}")]
         public async Task<ActionResult<TagDto>> GetTag(int id)
         {
@@ -59,7 +60,15 @@ namespace todo_apis.Controllers
             return Ok(tags);
         }
 
-        // POST: api/Tags
+        [Authorize]
+        [HttpGet]
+        public IActionResult AuthenticatedOnly()
+        {
+            return Ok("You are Authenticated");
+        }
+
+        // HTTP POSTS -------
+
         [HttpPost]
         public async Task<ActionResult<Entities.Models.TagDto>> PostTag([FromBody] Models.Tag newTag, string username)
         {
@@ -73,13 +82,6 @@ namespace todo_apis.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetTag", new { id = tag.tag_id }, tag);
-        }
-
-        [Authorize]
-        [HttpGet]
-        public IActionResult AuthenticatedOnly()
-        {
-            return Ok("You are Authenticated");
         }
     }
 }

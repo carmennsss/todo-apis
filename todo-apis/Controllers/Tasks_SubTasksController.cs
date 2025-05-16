@@ -21,10 +21,12 @@ namespace todo_apis.Controllers
             _context = context;
         }
 
-        [HttpGet("subtask/{id}")]
+        // HTTP GETS -------
+
+        [HttpGet("subtask")]
         public async Task<ActionResult<SubTask>> GetSubTask(int id_task, int id_subtask)
         {
-            var subTask_link = await _context.tasks_subtask
+            var subTask_link = await _context.task_subtask
                 .Where(subtask => subtask.subtask_id == id_subtask && subtask.task_id == id_task)
                 .FirstOrDefaultAsync();
 
@@ -33,7 +35,7 @@ namespace todo_apis.Controllers
                 return BadRequest("SubTask Not Found");
             }
 
-            var subTask = await _context.subTasks.FindAsync(subTask_link.subtask_id);
+            var subTask = await _context.subtasks.FindAsync(subTask_link.subtask_id);
             if (subTask == null)
             {
                 return BadRequest("SubTask Not Found");
@@ -45,10 +47,10 @@ namespace todo_apis.Controllers
         [HttpGet("{id_task}")]
         public async Task<ActionResult<IEnumerable<SubTask>>> GetSubTasks(int id_task)
         {
-            var subTasks = await _context.tasks_subtask
+            var subTasks = await _context.task_subtask
                 .Where(ts => ts.task_id == id_task)
                 .Join(
-                    _context.subTasks,
+                    _context.subtasks,
                     ts => ts.subtask_id,
                     st => st.subtask_id,
                     (ts, st) => st
@@ -63,18 +65,19 @@ namespace todo_apis.Controllers
             return Ok(subTasks);
         }
 
+        // HTTP POSTS -------
 
-        [HttpPost]
-        public async Task<ActionResult<Task_SubTask>> PostSubTasking(Task_SubTask subTask)
+        [HttpPost("add")]
+        public async Task<ActionResult<SubTask>> PostSubTasking(SubTask subTask)
         {
-            _context.tasks_subtask.Add(subTask);
+            _context.subtasks.Add(subTask);
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
-                if (SubTaskExists(subTask.subtask_id))
+                if (SubTask_Exists(subTask.subtask_id))
                 {
                     return Conflict();
                 }
@@ -84,12 +87,43 @@ namespace todo_apis.Controllers
                 }
             }
 
-            return Ok();
+            return Ok(subTask);
         }
 
-        private bool SubTaskExists(int id)
+
+        [HttpPost]
+        public async Task<ActionResult<Task_SubTask>> PostSubTasking(Task_SubTask subTask)
         {
-            return _context.tasks_subtask.Any(e => e.subtask_id == id);
+            _context.task_subtask.Add(subTask);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (SubTask_Task_Exists(subTask.subtask_id))
+                {
+                    return Conflict();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok(subTask);
+        }
+
+        // METHODS -------
+
+        private bool SubTask_Task_Exists(int id)
+        {
+            return _context.task_subtask.Any(e => e.subtask_id == id);
+        }
+
+        private bool SubTask_Exists(int id)
+        {
+            return _context.subtasks.Any(e => e.subtask_id == id);
         }
     }
 }

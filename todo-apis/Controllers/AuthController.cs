@@ -16,6 +16,9 @@ namespace todo_apis.Controllers
     public class AuthController(IAuthService authService) : Controller
     {
         public static ClientDto client = new();
+
+        // HTTP POSTS -------
+
         [HttpPost("register")]
         public async Task<ActionResult<ClientDto>> Register(ClientDto request)
         {
@@ -37,6 +40,8 @@ namespace todo_apis.Controllers
             }
             return Ok(token);
         }
+
+        // HTTP GETS -------
 
         [Authorize]
         [HttpGet]
