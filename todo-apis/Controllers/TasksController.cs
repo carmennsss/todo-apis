@@ -124,17 +124,17 @@ namespace todo_apis.Controllers
         // HTTP POSTS -------
 
         [HttpPost]
-        public async Task<ActionResult<CustomTask>> PostTasks(CustomTask tasks)
+        public async Task<ActionResult<TaskDto>> PostTasks(CustomTask task)
         {
-            _context.tasks.Add(tasks);
+            _context.tasks.Add(task);
             await _context.SaveChangesAsync();
-            return Ok(tasks);
+            return Ok(task);
             //return CreatedAtAction(nameof(GetTasks), new { id = tasks.task_id }, tasks);
             //return CreatedAtAction("Gettasks", new { id = tasks.Id }, tasks);
         }
 
         [HttpPost("edit")]
-        public async Task<ActionResult<IEnumerable<TaskDto>>> EditTask(int task_id, CustomTask edited_Task)
+        public async Task<ActionResult<IEnumerable<TaskDto>>> EditTask(int task_id, TaskDto edited_Task)
         {
             var task = await _context.tasks.FindAsync(task_id);
             if (task == null)

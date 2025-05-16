@@ -11,21 +11,9 @@ namespace todo_apis.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Task_SubtaskDto>().HasKey(x => new
-            {
-                x.subtask_id,
-                x.task_id,
-            });
-
             modelBuilder.Entity<Task_SubTask>().HasKey(x => new
             {
                 x.subtask_id,
-                x.task_id,
-            });
-
-            modelBuilder.Entity<Task_TagDto>().HasKey(x => new
-            {
-                x.tag_id,
                 x.task_id,
             });
 
@@ -34,7 +22,6 @@ namespace todo_apis.Context
                 x.tag_id,
                 x.task_id,
             });
-
         }
         public DbSet<CustomTask> tasks { get; set; } = default!;
         public DbSet<Client> clients { get; set; } = default!;
@@ -42,9 +29,9 @@ namespace todo_apis.Context
 
         public DbSet<Category> categories { get; set; } = default!;
 
-        public DbSet<Entities.SubTask> subtasks { get; set; } = default!;
-        public DbSet<todo_apis.Entities.Task_SubTask> task_subtask { get; set; } = default!;
-        public DbSet<todo_apis.Entities.Task_Tag> task_tag { get; set; } = default!;
+        public DbSet<SubTask> subtasks { get; set; } = default!;
+        public DbSet<Task_SubTask> task_subtask { get; set; } = default!;
+        public DbSet<Task_Tag> task_tag { get; set; } = default!;
 
     }
 }

@@ -20,7 +20,7 @@ namespace todo_apis.Controllers
         // HTTP GETS -------
 
         [HttpGet("user")]
-        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategoriesClient(string username)
+        public async Task<ActionResult<IEnumerable<Category>>> GetCategoriesClient(string username)
         {
             var client = await _context.clients.FindAsync(username);
             if (client == null) {

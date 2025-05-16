@@ -26,26 +26,19 @@ namespace todo_apis.Controllers
         // HTTP GETS -------
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<TagDto>> GetTag(int id)
+        public async Task<ActionResult<Tag>> GetTag(int id)
         {
-            var tag = new TagDto();
             var tag_found = await _context.tags.FindAsync(id);
 
             if (tag_found == null)
             {
                 return NotFound();
             }
-
-            tag.tag_name = tag_found.tag_name;
-            tag.tag_id = tag_found.tag_id;
-            tag.client_user = tag_found.client_user;
-
-
-            return tag;
+            return tag_found;
         }
 
         [HttpGet("user")]
-        public async Task<ActionResult<IEnumerable<TagDto>>> GetTagsFromClient(string username)
+        public async Task<ActionResult<IEnumerable<Tag>>> GetTagsFromClient(string username)
         {
             var client = await _context.clients.FindAsync(username);
             if (client == null)
@@ -70,14 +63,13 @@ namespace todo_apis.Controllers
         // HTTP POSTS -------
 
         [HttpPost]
-        public async Task<ActionResult<Entities.Models.TagDto>> PostTag([FromBody] Models.Tag newTag, string username)
+        public async Task<ActionResult<Tag>> PostTag([FromBody] Models.Tag tag, string username)
         {
             var client = await _context.clients.FindAsync(username);
             if (client == null)
             {
                 return BadRequest("User Not Found");
             }
-            Tag tag = new Tag(newTag.tag_name, client.username);
             _context.tags.Add(tag);
             await _context.SaveChangesAsync();
 
