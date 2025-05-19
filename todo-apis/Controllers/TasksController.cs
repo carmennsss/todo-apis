@@ -157,8 +157,16 @@ namespace todo_apis.Controllers
                     return BadRequest("Category Not Found");
                 }
                 task.list_id = edited_Task.list_id;
+            
             }
-            await _context.SaveChangesAsync();
+            var tasks_db = _context.tasks.Where(task => task.task_id == task.task_id).ToList();
+            foreach (var task_db in tasks_db)
+            {
+                task_db.task_name = task.task_name;
+                task_db.task_desc = task.task_desc;
+                task_db.list_id = task.list_id;
+            }
+            _context.SaveChanges();
             return Ok();
         }
 
