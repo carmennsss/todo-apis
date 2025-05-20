@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using todo_apis.Context;
+using todo_apis.Entities;
 using todo_apis.Entities.Models;
 using todo_apis.Models;
 
@@ -25,55 +21,76 @@ namespace todo_apis.Controllers
 
         // HTTP GETS -------
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<Tag>> GetTag(int id)
         {
-            var tag_found = await _context.tags.FindAsync(id);
-
-            if (tag_found == null)
+            var tag = await _context.tags.FindAsync(id);
+            if (tag == null)
             {
                 return NotFound();
             }
-            return tag_found;
-        }
-
-        [HttpGet("user")]
-        public async Task<ActionResult<IEnumerable<Tag>>> GetTagsFromClient(string username)
-        {
-            var client = await _context.clients.FindAsync(username);
-            if (client == null)
-            {
-                return BadRequest("User Not Found");
-            }
-            var tags = await _context.tags.Where(tag => tag.client_user == client.username).ToListAsync();
-            if (tags == null)
-            {
-                return BadRequest("Tags Not Found");
-            }
-            return Ok(tags);
+            return Ok(tag);
         }
 
         [Authorize]
-        [HttpGet]
-        public IActionResult AuthenticatedOnly()
+        [HttpGet("user")]
+        public async Task<ActionResult<IEnumerable<Tag>>> GetTagsClient()
         {
-            return Ok("You are Authenticated");
+            var username = User.Identity?.Name;
+            if (username == null)
+            {
+                return Unauthorized("User Unauthorized");
+            }
+
+            var tags = await _context.tags
+                .Where(tag => tag.client_user == username)
+                .ToListAsync();
+
+            if (tags == null) { 
+                return BadRequest("Tags Not Found"); 
+            }
+
+            return Ok(tags);
         }
 
-        // HTTP POSTS -------
+        // HTTP POST -------
 
+        [Authorize]
         [HttpPost]
-        public async Task<ActionResult<Tag>> PostTag([FromBody] Models.Tag tag, string username)
+        public async Task<ActionResult<Tag>> PostTag(Tag tag)
         {
-            var client = await _context.clients.FindAsync(username);
-            if (client == null)
+            var username = User.Identity?.Name;
+            if (username == null)
             {
-                return BadRequest("User Not Found");
+                return Unauthorized("User Unauthorized");
             }
-            _context.tags.Add(tag);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTag", new { id = tag.tag_id }, tag);
+            tag.client_user = username;
+            _context.tags.Add(tag);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (TagExists(tag.tag_id))
+                {
+                    return Conflict();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return Ok(tag);
+        }
+
+        // METHODS -------
+
+        private bool TagExists(int tag_id)
+        {
+            return _context.tags.Any(tag => tag.tag_id == tag_id);
         }
     }
 }

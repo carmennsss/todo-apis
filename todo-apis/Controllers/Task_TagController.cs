@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Build.Framework;
@@ -26,6 +27,7 @@ namespace todo_apis.Controllers
 
         // HTTP GETS -------
 
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Tag>>> GetTasksTags(int id_task)
         {
@@ -47,6 +49,7 @@ namespace todo_apis.Controllers
             return Ok(tags);
         }
 
+        [Authorize]
         [HttpGet("task/excluded-tags")]
         public async Task<ActionResult<IEnumerable<Tag>>> GetTagsNotInTask(int id_task)
         {
@@ -75,6 +78,7 @@ namespace todo_apis.Controllers
             return Ok(tags_not_in);
         }
 
+        [Authorize]
         [HttpGet("task/included-tags")]
         public async Task<ActionResult<IEnumerable<Tag>>> GetTagsInTask(int id_task)
         {
@@ -98,6 +102,7 @@ namespace todo_apis.Controllers
 
         // HTTP POSTS -------
 
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Task_Tag>> PostTask_Tag(Task_Tag task_Tag)
         {

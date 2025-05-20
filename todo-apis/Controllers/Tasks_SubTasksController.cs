@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ namespace todo_apis.Controllers
 
         // HTTP GETS -------
 
+        [Authorize]
         [HttpGet("subtask/{id}")]
         public async Task<ActionResult<SubTask>> GetSubTask(int id_task, int id_subtask)
         {
@@ -44,6 +46,7 @@ namespace todo_apis.Controllers
             return subTask;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SubTask>>> GetSubTasks(int id_task)
         {
@@ -67,6 +70,7 @@ namespace todo_apis.Controllers
 
         // HTTP POSTS -------
 
+        [Authorize]
         [HttpPost("subtask")]
         public async Task<ActionResult<SubTask>> PostSubTasking(SubTask subTask)
         {
@@ -90,7 +94,7 @@ namespace todo_apis.Controllers
             return Ok(subTask);
         }
 
-
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Task_SubTask>> PostSubTask_Task(Task_SubTask subTask)
         {

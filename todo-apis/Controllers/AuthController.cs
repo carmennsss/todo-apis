@@ -38,7 +38,7 @@ namespace todo_apis.Controllers
             {
                 return BadRequest("Invalid username/password");
             }
-            return Ok(token);
+            return Ok( new { token = token });
         }
 
         // HTTP GETS -------

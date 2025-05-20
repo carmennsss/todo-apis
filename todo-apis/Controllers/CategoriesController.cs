@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using todo_apis.Context;
 using todo_apis.Entities;
@@ -19,15 +20,17 @@ namespace todo_apis.Controllers
 
         // HTTP GETS -------
 
+        [Authorize]
         [HttpGet("user")]
-        public async Task<ActionResult<IEnumerable<Category>>> GetCategoriesClient(string username)
+        public async Task<ActionResult<IEnumerable<Category>>> GetCategoriesClient()
         {
-            var client = await _context.clients.FindAsync(username);
-            if (client == null) {
-                return BadRequest("User Not Found");
+            var username = User.Identity?.Name;
+            if (username == null)
+            {
+                return Unauthorized("User Unauthorized");
             }
 
-            var categories = await _context.categories.Where(category => category.client_user == client.username).ToListAsync();
+            var categories = await _context.categories.Where(category => category.client_user == username).ToListAsync();
             if (categories == null)
             {
                 return BadRequest("Categories Not Found");
@@ -36,6 +39,7 @@ namespace todo_apis.Controllers
             return Ok(categories);
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<Category>> GetCategory(int id)
         {
@@ -51,9 +55,16 @@ namespace todo_apis.Controllers
 
         // HTTP POST -------
 
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Category>> PostCategory(Category category)
         {
+            var username = User.Identity?.Name;
+            if (username == null)
+            {
+                return Unauthorized("User Unauthorized");
+            }
+            category.client_user = username;
             _context.categories.Add(category);
             try
             {

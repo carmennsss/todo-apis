@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using todo_apis.Context;
 using todo_apis.Models;
 using todo_apis.Services;
 using todo_apis.Services.Interfaces;
+using YamlDotNet.Core.Tokens;
 
 namespace todo_apis.Controllers
 {
@@ -27,18 +29,19 @@ namespace todo_apis.Controllers
             this.tasksService = tasksService;
         }
 
-        
+
 
         // HTTP GETS -------
 
-        [HttpGet("user/status")]
-        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksStatus(string username, string state_name)
+        [Authorize]
+        [HttpGet("user/status/{status-name}")]
+        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksStatus(string state_name)
         {
 
-            var client = await tasksService.FindClient(username);
-            if (client == null)
+            var username = User.Identity?.Name;
+            if (username == null)
             {
-                return NotFound("User Not Found");
+                return Unauthorized("User Unauthorized");
             }
 
             var tasks = await _context.tasks.Where(task => task.client_user == username && task.state_name == state_name).ToListAsync();
@@ -49,14 +52,15 @@ namespace todo_apis.Controllers
             return Ok(tasks);
         }
 
-        [HttpGet("user/categories")]
-        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksCategory(string username, int category_id)
+        [Authorize]
+        [HttpGet("user/category/{id-category}")]
+        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksCategory(int category_id)
         {
 
-            var client = await tasksService.FindClient(username);
-            if (client == null)
+            var username = User.Identity?.Name;
+            if (username == null)
             {
-                return NotFound("User Not Found");
+                return Unauthorized("User Unauthorized");
             }
 
             var category = await _context.categories.FindAsync(category_id);
@@ -74,14 +78,15 @@ namespace todo_apis.Controllers
             return Ok(tasks);
         }
 
+        [Authorize]
         [HttpGet("user")]
-        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksClient(string username)
+        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksClient()
         {
 
-            var client = await tasksService.FindClient(username);
-            if (client == null)
+            var username = User.Identity?.Name;
+            if (username == null)
             {
-                return NotFound("User Not Found");
+                return Unauthorized("User Unauthorized");
             }
 
             var tasks = await _context.tasks.Where(task => task.client_user == username).ToListAsync();
@@ -92,14 +97,15 @@ namespace todo_apis.Controllers
             return Ok(tasks);
         }
 
-        [HttpGet("user/date")]
-        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksDate(string username, string date)
+        [Authorize]
+        [HttpGet("user/date/{date}")]
+        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksDate(string date)
         {
             var parsedDate = DateTime.Parse(HttpUtility.UrlDecode(date));
-            var client = await tasksService.FindClient(username);
-            if (client == null)
+            var username = User.Identity?.Name;
+            if (username == null)
             {
-                return NotFound("User Not Found");
+                return Unauthorized("User Unauthorized");
             }
 
             var tasks = await _context.tasks.Where(task => task.client_user == username && task.task_due_date.Date == parsedDate.Date).ToListAsync();
@@ -110,7 +116,8 @@ namespace todo_apis.Controllers
             return Ok(tasks);
         }
 
-        [HttpGet("{id}")]
+        [Authorize]
+        [HttpGet("{id-task}")]
         public async Task<ActionResult<TaskDto>> GetTask(int task_id)
         {
             var task = await _context.tasks.FindAsync(task_id);
@@ -123,17 +130,37 @@ namespace todo_apis.Controllers
 
         // HTTP POSTS -------
 
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<TaskDto>> PostTasks(CustomTask task)
         {
+            var username = User.Identity?.Name;
+            if (username == null)
+            {
+                return Unauthorized("User Unauthorized");
+            }
+            task.client_user = username;
             _context.tasks.Add(task);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (TaskExists(task.task_id))
+                {
+                    return Conflict();
+                }
+                else
+                {
+                    throw;
+                }
+            }
             return Ok(task);
-            //return CreatedAtAction(nameof(GetTasks), new { id = tasks.task_id }, tasks);
-            //return CreatedAtAction("Gettasks", new { id = tasks.Id }, tasks);
         }
 
-        [HttpPost("edit")]
+        [Authorize]
+        [HttpPost("edit/{id-task}")]
         public async Task<ActionResult<IEnumerable<TaskDto>>> EditTask(int task_id, TaskDto edited_Task)
         {
             var task = await _context.tasks.FindAsync(task_id);
@@ -149,7 +176,7 @@ namespace todo_apis.Controllers
             {
                 task.task_desc = edited_Task.task_desc;
             }
-            if (edited_Task.list_id != -1)
+            if (edited_Task.list_id != 0)
             {
                 var list = _context.categories.Where(category => category.category_id == edited_Task.list_id).FirstOrDefault();
                 if (list == null)
@@ -157,7 +184,6 @@ namespace todo_apis.Controllers
                     return BadRequest("Category Not Found");
                 }
                 task.list_id = edited_Task.list_id;
-            
             }
             var tasks_db = _context.tasks.Where(task => task.task_id == task.task_id).ToList();
             foreach (var task_db in tasks_db)
@@ -172,6 +198,7 @@ namespace todo_apis.Controllers
 
         // HTTP DELETES -------
 
+        [Authorize]
         [HttpDelete]
         public async Task<IActionResult> DeleteTask(int id)
         {
@@ -185,6 +212,13 @@ namespace todo_apis.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // METHODS -------
+
+        private bool TaskExists(int task_id)
+        {
+            return _context.tasks.Any(task => task.task_id == task_id);
         }
     }
 }
