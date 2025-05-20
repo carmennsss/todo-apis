@@ -12,5 +12,7 @@ namespace todo_apis.Entities
         public CategoryDto(string category_name) {
             this.category_name = category_name;
         }
+
+        public CategoryDto() { }
     }
 }

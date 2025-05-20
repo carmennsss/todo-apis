@@ -21,5 +21,7 @@ namespace todo_apis.Models
             this.task_due_date = task_due_date;
             this.state_name = state_name;
         }
+
+        public TaskDto() { }
     }
 }

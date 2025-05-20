@@ -23,5 +23,7 @@ namespace todo_apis.Models
             this.state_name = state_name;
             this.client_user = username;
         }
+
+        public CustomTask() { }
     }
 }

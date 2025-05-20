@@ -16,5 +16,7 @@ namespace todo_apis.Entities
             this.category_name = category_name;
             this.client_user = username;
         }
+
+        public Category() { }
     }
 }
