@@ -2,19 +2,15 @@
 
 namespace todo_apis.Entities
 {
-    public class Category
+    public class CategoryDto
     {
         [Key]
         public int category_id { get; set; }
 
         public string category_name { get; set; }
 
-        public string client_user { get; set; }
-
-        public Category(string category_name, string username)
-        {
+        public CategoryDto(string category_name) {
             this.category_name = category_name;
-            this.client_user = username;
         }
     }
 }

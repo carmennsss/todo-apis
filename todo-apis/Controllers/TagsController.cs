@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using todo_apis.Context;
-using todo_apis.Entities;
-using todo_apis.Entities.Models;
 using todo_apis.Models;
 
 namespace todo_apis.Controllers
@@ -58,23 +56,22 @@ namespace todo_apis.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<Tag>> PostTag(Tag tag)
+        public async Task<ActionResult<Tag>> PostTag(TagDto tag)
         {
             var username = User.Identity?.Name;
             if (username == null)
             {
                 return Unauthorized("User Unauthorized");
             }
-
-            tag.client_user = username;
-            _context.tags.Add(tag);
+            var tag_db = new Tag(tag.tag_name, username);
+            _context.tags.Add(tag_db);
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
-                if (TagExists(tag.tag_id))
+                if (TagExists(tag_db.tag_id))
                 {
                     return Conflict();
                 }
@@ -83,7 +80,7 @@ namespace todo_apis.Controllers
                     throw;
                 }
             }
-            return Ok(tag);
+            return Ok(tag_db);
         }
 
         // METHODS -------

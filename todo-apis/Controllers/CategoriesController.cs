@@ -57,21 +57,21 @@ namespace todo_apis.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<Category>> PostCategory(Category category)
+        public async Task<ActionResult<Category>> PostCategory(CategoryDto category)
         {
             var username = User.Identity?.Name;
             if (username == null)
             {
                 return Unauthorized("User Unauthorized");
             }
-            category.client_user = username;
-            _context.categories.Add(category);
+            var category_db = new Category(category.category_name, username);
+            _context.categories.Add(category_db);
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException) {
-                if (CategoryExists(category.category_id))
+                if (CategoryExists(category_db.category_id))
                 {
                     return Conflict();
                 }
@@ -80,7 +80,7 @@ namespace todo_apis.Controllers
                     throw;
                 }
             }
-            return  Ok(category);
+            return Ok(category_db);
         }
 
         // METHODS -------

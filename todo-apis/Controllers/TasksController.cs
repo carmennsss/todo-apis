@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Web;
+﻿using System.Web;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using todo_apis.Context;
 using todo_apis.Models;
-using todo_apis.Services;
 using todo_apis.Services.Interfaces;
-using YamlDotNet.Core.Tokens;
 
 namespace todo_apis.Controllers
 {
@@ -35,7 +27,7 @@ namespace todo_apis.Controllers
 
         [Authorize]
         [HttpGet("user/status/{status-name}")]
-        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksStatus(string state_name)
+        public async Task<ActionResult<IEnumerable<CustomTask>>> GetTasksStatus(string state_name)
         {
 
             var username = User.Identity?.Name;
@@ -54,7 +46,7 @@ namespace todo_apis.Controllers
 
         [Authorize]
         [HttpGet("user/category/{id-category}")]
-        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksCategory(int category_id)
+        public async Task<ActionResult<IEnumerable<CustomTask>>> GetTasksCategory(int category_id)
         {
 
             var username = User.Identity?.Name;
@@ -80,7 +72,7 @@ namespace todo_apis.Controllers
 
         [Authorize]
         [HttpGet("user")]
-        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksClient()
+        public async Task<ActionResult<IEnumerable<CustomTask>>> GetTasksClient()
         {
 
             var username = User.Identity?.Name;
@@ -99,7 +91,7 @@ namespace todo_apis.Controllers
 
         [Authorize]
         [HttpGet("user/date/{date}")]
-        public async Task<ActionResult<IEnumerable<TaskDto>>> GetTasksDate(string date)
+        public async Task<ActionResult<IEnumerable<CustomTask>>> GetTasksDate(string date)
         {
             var parsedDate = DateTime.Parse(HttpUtility.UrlDecode(date));
             var username = User.Identity?.Name;
@@ -118,7 +110,7 @@ namespace todo_apis.Controllers
 
         [Authorize]
         [HttpGet("{id-task}")]
-        public async Task<ActionResult<TaskDto>> GetTask(int task_id)
+        public async Task<ActionResult<CustomTask>> GetTask(int task_id)
         {
             var task = await _context.tasks.FindAsync(task_id);
             if (task == null)
@@ -132,22 +124,22 @@ namespace todo_apis.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<TaskDto>> PostTasks(CustomTask task)
+        public async Task<ActionResult<CustomTask>> PostTasks(TaskDto task)
         {
             var username = User.Identity?.Name;
             if (username == null)
             {
                 return Unauthorized("User Unauthorized");
             }
-            task.client_user = username;
-            _context.tasks.Add(task);
+            var task_db = new CustomTask(task.task_name, task.task_desc, task.list_id, task.task_due_date, task.state_name, username);
+            _context.tasks.Add(task_db);
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
-                if (TaskExists(task.task_id))
+                if (TaskExists(task_db.task_id))
                 {
                     return Conflict();
                 }
@@ -161,7 +153,7 @@ namespace todo_apis.Controllers
 
         [Authorize]
         [HttpPost("edit/{id-task}")]
-        public async Task<ActionResult<IEnumerable<TaskDto>>> EditTask(int task_id, TaskDto edited_Task)
+        public async Task<ActionResult<IEnumerable<CustomTask>>> EditTask(int task_id, TaskDto edited_Task)
         {
             var task = await _context.tasks.FindAsync(task_id);
             if (task == null)
@@ -193,7 +185,7 @@ namespace todo_apis.Controllers
                 task_db.list_id = task.list_id;
             }
             _context.SaveChanges();
-            return Ok();
+            return Ok(task);
         }
 
         // HTTP DELETES -------
