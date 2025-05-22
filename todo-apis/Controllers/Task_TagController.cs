@@ -29,7 +29,7 @@ namespace todo_apis.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Tag>>> GetTasksTags(int id_task)
+        public async Task<ActionResult<IEnumerable<TagDto>>> GetTasksTags(int id_task)
         {
             var tags = await _context.task_tag
                 .Where(ts => ts.task_id == id_task)
@@ -51,12 +51,18 @@ namespace todo_apis.Controllers
 
         [Authorize]
         [HttpGet("task/excluded-tags")]
-        public async Task<ActionResult<IEnumerable<Tag>>> GetTagsNotInTask(int id_task)
+        public async Task<ActionResult<IEnumerable<TagDto>>> GetTagsNotInTask(int id_task)
         {
+            var username = User.Identity?.Name;
+            if (username == null)
+            {
+                return Unauthorized("User Unauthorized");
+            }
+
             var tags = await _context.task_tag
                 .Where(ts => ts.task_id == id_task)
                 .Join(
-                    _context.tags,
+                    _context.tags.Where(tag => tag.client_user == username),
                     ts => ts.tag_id,
                     tg => tg.tag_id,
                     (ts, tg) => tg
@@ -67,7 +73,11 @@ namespace todo_apis.Controllers
             {
                 return BadRequest("Tags Not Found");
             }
-            var allTags = await _context.tags.ToListAsync();
+
+            var allTags = await _context.tags
+                .Where(tag => tag.client_user == username)
+                .ToListAsync();
+
             var tags_not_in = allTags.Except(tags, new TagComparer()).ToList();
 
             if (tags_not_in == null)
@@ -80,12 +90,18 @@ namespace todo_apis.Controllers
 
         [Authorize]
         [HttpGet("task/included-tags")]
-        public async Task<ActionResult<IEnumerable<Tag>>> GetTagsInTask(int id_task)
+        public async Task<ActionResult<IEnumerable<TagDto>>> GetTagsInTask(int id_task)
         {
+            var username = User.Identity?.Name;
+            if (username == null)
+            {
+                return Unauthorized("User Unauthorized");
+            }
+
             var tags = await _context.task_tag
                 .Where(ts => ts.task_id == id_task)
                 .Join(
-                    _context.tags,
+                    _context.tags.Where(tag => tag.client_user == username),
                     ts => ts.tag_id,
                     tg => tg.tag_id,
                     (ts, tg) => tg
@@ -106,6 +122,11 @@ namespace todo_apis.Controllers
         [HttpPost]
         public async Task<ActionResult<Task_Tag>> PostTask_Tag(Task_Tag task_Tag)
         {
+            if (_context.task_tag.Any(tt => tt.task_id == task_Tag.task_id && tt.tag_id == task_Tag.tag_id))
+            {
+                return Conflict(new { message = "It already exists" });
+            }
+
             _context.task_tag.Add(task_Tag);
             try
             {

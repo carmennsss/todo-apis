@@ -33,7 +33,7 @@ namespace todo_apis.Controllers
 
         [Authorize]
         [HttpGet("user")]
-        public async Task<ActionResult<IEnumerable<Tag>>> GetTagsClient()
+        public async Task<ActionResult<IEnumerable<TagDto>>> GetTagsClient()
         {
             var username = User.Identity?.Name;
             if (username == null)

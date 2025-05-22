@@ -93,14 +93,20 @@ namespace todo_apis.Controllers
         [HttpGet("user/date/{date}")]
         public async Task<ActionResult<IEnumerable<CustomTask>>> GetTasksDate(string date)
         {
-            var parsedDate = DateTime.Parse(HttpUtility.UrlDecode(date));
             var username = User.Identity?.Name;
             if (username == null)
             {
                 return Unauthorized("User Unauthorized");
             }
 
-            var tasks = await _context.tasks.Where(task => task.client_user == username && task.task_due_date.Date == parsedDate.Date).ToListAsync();
+            if (!DateTime.TryParse(HttpUtility.UrlDecode(date), out var parsedDate))
+            {
+                return BadRequest("Invalid date format.");
+            }
+
+            var tasks = await _context.tasks.Where(task =>
+            task.client_user == username && task.task_due_date.HasValue && task.task_due_date.Value.Date == parsedDate.Date).ToListAsync();
+
             if (tasks == null)
             {
                 return BadRequest("Tasks Not Found");
@@ -109,10 +115,10 @@ namespace todo_apis.Controllers
         }
 
         [Authorize]
-        [HttpGet("{id-task}")]
-        public async Task<ActionResult<CustomTask>> GetTask(int task_id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<CustomTask>> GetTask(int id)
         {
-            var task = await _context.tasks.FindAsync(task_id);
+            var task = await _context.tasks.FindAsync(id);
             if (task == null)
             {
                 return BadRequest("Task Not Found");
@@ -131,7 +137,15 @@ namespace todo_apis.Controllers
             {
                 return Unauthorized("User Unauthorized");
             }
-            var task_db = new CustomTask(task.task_name, task.task_desc, task.list_id, task.task_due_date, task.state_name, username);
+            var task_db = new CustomTask(
+                task.task_name,
+                task.task_desc,
+                task.list_id,
+                task.task_due_date,
+                task.state_name,
+                username
+            );
+
             _context.tasks.Add(task_db);
             try
             {
@@ -151,43 +165,6 @@ namespace todo_apis.Controllers
             return Ok(task);
         }
 
-        [Authorize]
-        [HttpPost("edit/{id-task}")]
-        public async Task<ActionResult<IEnumerable<CustomTask>>> EditTask(int task_id, TaskDto edited_Task)
-        {
-            var task = await _context.tasks.FindAsync(task_id);
-            if (task == null)
-            {
-                return BadRequest("Task Not Found");
-            }
-            if (edited_Task.task_name != "")
-            {
-                task.task_name = edited_Task.task_name;
-            }
-            if (edited_Task.task_desc != "")
-            {
-                task.task_desc = edited_Task.task_desc;
-            }
-            if (edited_Task.list_id != 0)
-            {
-                var list = _context.categories.Where(category => category.category_id == edited_Task.list_id).FirstOrDefault();
-                if (list == null)
-                {
-                    return BadRequest("Category Not Found");
-                }
-                task.list_id = edited_Task.list_id;
-            }
-            var tasks_db = _context.tasks.Where(task => task.task_id == task.task_id).ToList();
-            foreach (var task_db in tasks_db)
-            {
-                task_db.task_name = task.task_name;
-                task_db.task_desc = task.task_desc;
-                task_db.list_id = task.list_id;
-            }
-            _context.SaveChanges();
-            return Ok(task);
-        }
-
         // HTTP DELETES -------
 
         [Authorize]
@@ -204,6 +181,44 @@ namespace todo_apis.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // HTTP PUT -------
+        [Authorize]
+        [HttpPut("edit/{id}")]
+        public async Task<ActionResult<IEnumerable<CustomTask>>> EditTask(int id, [FromBody] TaskDto edited_Task)
+        {
+            var task = await _context.tasks.FindAsync(id);
+            if (task == null)
+            {
+                return BadRequest("Task Not Found");
+            }
+
+            if (edited_Task.task_name != "")
+            {
+                task.task_name = edited_Task.task_name;
+            }
+
+            if (edited_Task.task_desc != "")
+            {
+                task.task_desc = edited_Task.task_desc;
+            }
+
+            if (edited_Task.list_id != null)
+            {
+                var list = _context.categories.Where(category => category.category_id == edited_Task.list_id).FirstOrDefault();
+                if (list == null)
+                {
+                    return BadRequest("Category Not Found");
+                }
+                task.list_id = edited_Task.list_id;
+            }
+            if (edited_Task.task_due_date != null)
+            {
+                task.task_due_date = edited_Task.task_due_date;
+            }
+            await _context.SaveChangesAsync();
+            return Ok(task);
         }
 
         // METHODS -------
