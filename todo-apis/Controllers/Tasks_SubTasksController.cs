@@ -11,7 +11,7 @@ using todo_apis.Entities;
 
 namespace todo_apis.Controllers
 {
-    [Route("api/tasks-subtasks")]
+    [Route("api/subtasks")]
     [ApiController]
     public class Tasks_SubTasksController : ControllerBase
     {
@@ -25,19 +25,11 @@ namespace todo_apis.Controllers
         // HTTP GETS -------
 
         [Authorize]
-        [HttpGet("subtask/{id}")]
-        public async Task<ActionResult<SubTask>> GetSubTask(int id_task, int id_subtask)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Task_SubTask>> GetSubTask(int id)
         {
-            var subTask_link = await _context.task_subtask
-                .Where(subtask => subtask.subtask_id == id_subtask && subtask.task_id == id_task)
-                .FirstOrDefaultAsync();
+            var subTask = await _context.subtasks.FindAsync(id);
 
-            if (subTask_link == null)
-            {
-                return BadRequest("SubTask Not Found");
-            }
-
-            var subTask = await _context.subtasks.FindAsync(subTask_link.subtask_id);
             if (subTask == null)
             {
                 return BadRequest("SubTask Not Found");
@@ -47,17 +39,11 @@ namespace todo_apis.Controllers
         }
 
         [Authorize]
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<SubTask>>> GetSubTasks(int id_task)
+        [HttpGet("task/{id}")]
+        public async Task<ActionResult<IEnumerable<Task_SubTask>>> GetSubTasks(int id)
         {
-            var subTasks = await _context.task_subtask
-                .Where(ts => ts.task_id == id_task)
-                .Join(
-                    _context.subtasks,
-                    ts => ts.subtask_id,
-                    st => st.subtask_id,
-                    (ts, st) => st
-                )
+            var subTasks = await _context.subtasks
+                .Where(subtask => subtask.task_id == id)
                 .ToListAsync();
 
             if (subTasks == null)
@@ -71,8 +57,8 @@ namespace todo_apis.Controllers
         // HTTP POSTS -------
 
         [Authorize]
-        [HttpPost("subtask")]
-        public async Task<ActionResult<SubTask>> PostSubTasking(SubTask subTask)
+        [HttpPost]
+        public async Task<ActionResult<Task_SubTask>> PostSubTask(Task_SubTask subTask)
         {
             _context.subtasks.Add(subTask);
             try
@@ -94,36 +80,7 @@ namespace todo_apis.Controllers
             return Ok(subTask);
         }
 
-        [Authorize]
-        [HttpPost]
-        public async Task<ActionResult<Task_SubTask>> PostSubTask_Task(Task_SubTask subTask)
-        {
-            _context.task_subtask.Add(subTask);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (SubTask_Task_Exists(subTask.subtask_id))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return Ok(subTask);
-        }
-
         // METHODS -------
-
-        private bool SubTask_Task_Exists(int id)
-        {
-            return _context.task_subtask.Any(e => e.subtask_id == id);
-        }
 
         private bool SubTask_Exists(int id)
         {
