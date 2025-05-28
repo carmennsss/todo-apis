@@ -18,8 +18,15 @@ namespace todo_apis.Controllers
             _context = context;
         }
 
-        // HTTP GETS -------
+        //HTTP GETS -------
 
+        /// <summary>
+        /// Gets the categories from a client
+        /// The client's user is obtained from the http request (name)
+        /// </summary>
+        /// <returns>
+        /// Ok status and the categories or BadRequest or Unauthorized
+        /// </returns>
         [Authorize]
         [HttpGet("user")]
         public async Task<ActionResult<IEnumerable<Category>>> GetCategoriesClient()
@@ -39,6 +46,13 @@ namespace todo_apis.Controllers
             return Ok(categories);
         }
 
+        /// <summary>
+        /// Gets a specific category
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The category or NotFound status
+        /// </returns>
         [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<Category>> GetCategory(int id)
@@ -55,6 +69,14 @@ namespace todo_apis.Controllers
 
         // HTTP POST -------
 
+        /// <summary>
+        /// Adds a category to the db
+        /// The client's user is obtained from the http request (name)
+        /// </summary>
+        /// <param name="category"></param>
+        /// <returns>
+        /// Ok status with the category or Conflict or Unauthorized
+        /// </returns>
         [Authorize]
         [HttpPost]
         public async Task<ActionResult<Category>> PostCategory(CategoryDto category)

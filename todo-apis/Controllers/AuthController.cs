@@ -19,6 +19,14 @@ namespace todo_apis.Controllers
 
         // HTTP POSTS -------
 
+        /// <summary>
+        /// Gets the client and calls the auth service (register method)
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>
+        /// Ok status with the client or BadRequest
+        /// </returns>
         [HttpPost("register")]
         public async Task<ActionResult<ClientDto>> Register(ClientDto request)
         {
@@ -30,6 +38,13 @@ namespace todo_apis.Controllers
             return Ok(client);
         }
 
+        /// <summary>
+        /// Gets the client and calls the auth service (login method)
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>
+        /// Ok status with the token or BadRequest
+        /// </returns>
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(ClientDto request)
         {

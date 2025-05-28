@@ -27,28 +27,13 @@ namespace todo_apis.Controllers
 
         // HTTP GETS -------
 
-        [Authorize]
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<TagDto>>> GetTasksTags(int id_task)
-        {
-            var tags = await _context.task_tag
-                .Where(ts => ts.task_id == id_task)
-                .Join(
-                    _context.tags,
-                    ts => ts.tag_id,
-                    tg => tg.tag_id,
-                    (ts, tg) => tg
-                )
-                .ToListAsync();
-
-            if (tags == null)
-            {
-                return BadRequest("SubTasks Not Found");
-            }
-
-            return Ok(tags);
-        }
-
+        /// <summary>
+        /// Gets the tags that are not related to a task
+        /// </summary>
+        /// <param name="id_task"></param>
+        /// <returns>
+        /// Ok status with the tags or BadRequest or Unauthorized
+        /// </returns>
         [Authorize]
         [HttpGet("task/excluded-tags")]
         public async Task<ActionResult<IEnumerable<TagDto>>> GetTagsNotInTask(int id_task)
@@ -88,6 +73,13 @@ namespace todo_apis.Controllers
             return Ok(tags_not_in);
         }
 
+        /// <summary>
+        /// Get all the tags related to a task
+        /// </summary>
+        /// <param name="id_task"></param>
+        /// <returns>
+        /// Ok status with the tags or BadRequest or Unauthorized
+        /// </returns>
         [Authorize]
         [HttpGet("task/included-tags")]
         public async Task<ActionResult<IEnumerable<TagDto>>> GetTagsInTask(int id_task)
@@ -118,6 +110,13 @@ namespace todo_apis.Controllers
 
         // HTTP POSTS -------
 
+        /// <summary>
+        /// Adds a relationship between a task (already created) and a task
+        /// </summary>
+        /// <param name="task_Tag"></param>
+        /// <returns>
+        /// Ok status with the task_tag relationship or Conflict
+        /// </returns>
         [Authorize]
         [HttpPost]
         public async Task<ActionResult<Task_Tag>> PostTask_Tag(Task_Tag task_Tag)

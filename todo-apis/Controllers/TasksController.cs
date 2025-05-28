@@ -25,6 +25,15 @@ namespace todo_apis.Controllers
 
         // HTTP GETS -------
 
+        /// <summary>
+        /// Gets all the tasks from a specific status
+        /// (ex. late, paused...)
+        /// The client's user is obtained from the http request (name)
+        /// </summary>
+        /// <param name="state_name"></param>
+        /// <returns>
+        /// Ok status with the tasks or BadRequest or Unauthorized
+        /// </returns>
         [Authorize]
         [HttpGet("user/status/{status-name}")]
         public async Task<ActionResult<IEnumerable<CustomTask>>> GetTasksStatus(string state_name)
@@ -44,6 +53,14 @@ namespace todo_apis.Controllers
             return Ok(tasks);
         }
 
+        /// <summary>
+        /// Gets all the tasks of a specific category
+        /// The client's user is obtained from the http request (name)
+        /// </summary>
+        /// <param name="category_id"></param>
+        /// <returns>
+        /// Ok status with the tasks or BadRequest or Unauthorized
+        /// </returns>
         [Authorize]
         [HttpGet("user/category/{id-category}")]
         public async Task<ActionResult<IEnumerable<CustomTask>>> GetTasksCategory(int category_id)
@@ -70,6 +87,13 @@ namespace todo_apis.Controllers
             return Ok(tasks);
         }
 
+        /// <summary>
+        /// Gets all the tasks from a client
+        /// The client's user is obtained from the http request (name)
+        /// </summary>
+        /// <returns>
+        /// Ok status with the tasks or BadRequest or Unauthorized
+        /// </returns>
         [Authorize]
         [HttpGet("user")]
         public async Task<ActionResult<IEnumerable<CustomTask>>> GetTasksClient()
@@ -89,6 +113,14 @@ namespace todo_apis.Controllers
             return Ok(tasks);
         }
 
+        /// <summary>
+        /// Gets all the tasks of a specific date
+        /// The client's user is obtained from the http request (name)
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns>
+        /// Ok status with the tasks or BadRequest or Unauthorized
+        /// </returns>
         [Authorize]
         [HttpGet("user/date/{date}")]
         public async Task<ActionResult<IEnumerable<CustomTask>>> GetTasksDate(string date)
@@ -114,6 +146,13 @@ namespace todo_apis.Controllers
             return Ok(tasks);
         }
 
+        /// <summary>
+        /// Gets a specific task based on it's id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>
+        /// Ok status with the task or BadRequest
+        /// </returns>
         [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<CustomTask>> GetTask(int id)
@@ -128,6 +167,15 @@ namespace todo_apis.Controllers
 
         // HTTP POSTS -------
 
+        /// <summary>
+        /// Creates a task
+        /// First we transform the request data
+        /// and then we add it to the db
+        /// </summary>
+        /// <param name="task"></param>
+        /// <returns>
+        /// Ok status with the task or Conflict or Unauthorized
+        /// </returns>
         [Authorize]
         [HttpPost]
         public async Task<ActionResult<CustomTask>> PostTasks(TaskDto task)
@@ -167,6 +215,13 @@ namespace todo_apis.Controllers
 
         // HTTP DELETES -------
 
+        /// <summary>
+        /// Deletes a specific task based on it's id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>
+        /// No content status
+        /// </returns>
         [Authorize]
         [HttpDelete]
         public async Task<IActionResult> DeleteTask(int id)
@@ -185,6 +240,20 @@ namespace todo_apis.Controllers
 
         // HTTP PUT -------
 
+        /// <summary>
+        /// Gets an id from an already created task 
+        /// and a new task, then edits the task from the db
+        /// 
+        /// Finds the task with it's id and replaces it with the new task
+        /// from the request
+        /// It's only replaced if the field is not empty or null
+        /// The we save the changes
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="edited_Task"></param>
+        /// <returns>
+        /// Ok status with the task or BadRequest
+        /// </returns>
         [Authorize]
         [HttpPut("edit/{id}")]
         public async Task<ActionResult<IEnumerable<CustomTask>>> EditTask(int id, [FromBody] TaskDto edited_Task)

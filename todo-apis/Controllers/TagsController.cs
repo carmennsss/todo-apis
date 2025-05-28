@@ -19,6 +19,13 @@ namespace todo_apis.Controllers
 
         // HTTP GETS -------
 
+        /// <summary>
+        /// Gets a specific tag with the id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>
+        /// Ok status with the tag or NotFound
+        /// </returns>
         [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<Tag>> GetTag(int id)
@@ -31,6 +38,13 @@ namespace todo_apis.Controllers
             return Ok(tag);
         }
 
+        /// <summary>
+        /// Gets all the tags from a user
+        /// The client's user is obtained from the http request (name)
+        /// </summary>
+        /// <returns>
+        /// Ok status with the tags or BadRequest or Unauthorized
+        /// </returns>
         [Authorize]
         [HttpGet("user")]
         public async Task<ActionResult<IEnumerable<TagDto>>> GetTagsClient()
@@ -54,6 +68,13 @@ namespace todo_apis.Controllers
 
         // HTTP POST -------
 
+        /// <summary>
+        /// Adds a tag to the db
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns>
+        /// Ok status with the tag or Conflict or Unauthorized
+        /// </returns>
         [Authorize]
         [HttpPost]
         public async Task<ActionResult<Tag>> PostTag(TagDto tag)
