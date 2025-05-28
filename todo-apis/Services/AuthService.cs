@@ -14,6 +14,10 @@ namespace todo_apis.Services
 {
     public class AuthService(AppDbContext context, IConfiguration configuration) : IAuthService
     {
+        /**
+         * Searches the username, if it already exists returns null.
+         * If not, hashes the password and adds the client to the db.
+         */
         public async Task<Client?> RegisterAsync(ClientDto request)
         {
             if (await context.clients.AnyAsync(c => c.username == request.username))
@@ -31,8 +35,12 @@ namespace todo_apis.Services
             return client;
         }
 
+        /**
+         * Searches the username, if it exists, 
+         * verifies the password and creates a token
+         */
         public async Task<string?> LoginAsync(ClientDto request)
-        { 
+        {
             var client = await context.clients.FirstOrDefaultAsync(c => c.username == request.username);
             if (client == null)
             {
@@ -49,6 +57,9 @@ namespace todo_apis.Services
             return CreateToken(client);
         }
 
+        /**
+         * Creates the token with the config settings and sets the claims.
+         */
         private string CreateToken(Client client)
         {
             var claims = new List<Claim>

@@ -1,12 +1,6 @@
-﻿using System.Configuration;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+﻿/* NOT USED */
+
 using todo_apis.Context;
-using todo_apis.Entities.Models;
 using todo_apis.Models;
 using todo_apis.Services.Interfaces;
 
